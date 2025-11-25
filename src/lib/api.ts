@@ -1,5 +1,6 @@
 // API configuration and helper functions
 const API_BASE_URL = 'https://trad-backend.onrender.com/api';
+const IP_API_BASE_URL = 'https://api-server-oj5h.onrender.com/api';
 
 export const api = {
   // Auth endpoints
@@ -173,6 +174,13 @@ export const api = {
       method: 'DELETE',
       headers
     });
+    return response.json();
+  },
+
+  // IP Address endpoints
+  getIpAddresses: async (limit?: number) => {
+    const url = limit ? `${IP_API_BASE_URL}/ipaddresses?limit=${limit}` : `${IP_API_BASE_URL}/ipaddresses`;
+    const response = await fetch(url);
     return response.json();
   }
 };
