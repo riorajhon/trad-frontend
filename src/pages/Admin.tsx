@@ -108,6 +108,7 @@ const Admin = () => {
         userId,
         newRole,
         user.isActive,
+        user.canAccessTodos,
         token || undefined
       );
 
@@ -142,6 +143,7 @@ const Admin = () => {
         userId,
         user.role,
         isActive,
+        user.canAccessTodos,
         token || undefined
       );
 
@@ -162,6 +164,41 @@ const Admin = () => {
       toast({
         title: 'Error',
         description: 'Failed to update status',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleTodoAccessChange = async (userId: string, canAccessTodos: boolean) => {
+    const token = localStorage.getItem('userToken');
+    const user = users.find(u => u.uid === userId);
+    
+    try {
+      const result = await api.updateUserRole(
+        userId,
+        user.role,
+        user.isActive,
+        canAccessTodos,
+        token || undefined
+      );
+
+      if (result.success) {
+        setUsers(users.map(u => u.uid === userId ? result.data : u));
+        toast({
+          title: 'Success',
+          description: `Todo access ${canAccessTodos ? 'granted' : 'revoked'} successfully`
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: result.message || 'Failed to update todo access',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update todo access',
         variant: 'destructive'
       });
     }
@@ -284,6 +321,7 @@ const Admin = () => {
                     <TableHead>IP Address</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Todo Access</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -328,6 +366,17 @@ const Admin = () => {
                           />
                           <span className="text-sm">
                             {user.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={user.canAccessTodos || false}
+                            onCheckedChange={(checked) => handleTodoAccessChange(user.uid, checked)}
+                          />
+                          <span className="text-sm">
+                            {user.canAccessTodos ? 'Allowed' : 'Denied'}
                           </span>
                         </div>
                       </TableCell>

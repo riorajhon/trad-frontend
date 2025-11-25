@@ -6,6 +6,7 @@ export interface User {
   ipAddress?: string;
   role: 'user' | 'admin' | 'moderator';
   isActive: boolean;
+  canAccessTodos?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -135,13 +135,15 @@ const Layout = ({ children }: LayoutProps) => {
                 >
                   Trading
                 </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => navigate('/todos')}
-                  className="text-sm"
-                >
-                  Todos
-                </Button>
+                {(user?.canAccessTodos || user?.role === 'admin') && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => navigate('/todos')}
+                    className="text-sm"
+                  >
+                    Todos
+                  </Button>
+                )}
               </nav>
             </div>
             

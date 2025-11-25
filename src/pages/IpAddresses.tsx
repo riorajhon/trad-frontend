@@ -5,8 +5,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { api } from '@/lib/api';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Trash2 } from 'lucide-react';
 import Layout from '@/components/Layout';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface IpAddressRecord {
   id: string;
@@ -21,6 +31,7 @@ const IpAddresses = () => {
   const [ipAddresses, setIpAddresses] = useState<IpAddressRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -56,6 +67,36 @@ const IpAddresses = () => {
   const handleRefresh = () => {
     setRefreshing(true);
     loadIpAddresses();
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    
+    try {
+      const result = await api.deleteIpAddress(deleteId);
+
+      if (result.success) {
+        setIpAddresses(ipAddresses.filter(ip => ip.id !== deleteId));
+        toast({
+          title: 'Success',
+          description: 'IP address record deleted successfully'
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: result.message || 'Failed to delete IP address',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete IP address',
+        variant: 'destructive'
+      });
+    } finally {
+      setDeleteId(null);
+    }
   };
 
   const formatDate = (dateString?: string) => {
@@ -115,12 +156,13 @@ const IpAddresses = () => {
                     <TableHead>User Agent</TableHead>
                     <TableHead>Timestamp</TableHead>
                     <TableHead>Created At</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {ipAddresses.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground">
+                      <TableCell colSpan={5} className="text-center text-muted-foreground">
                         No IP address records found
                       </TableCell>
                     </TableRow>
@@ -141,6 +183,15 @@ const IpAddresses = () => {
                         <TableCell>
                           {formatDate(record.createdAt)}
                         </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => setDeleteId(record.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))
                   )}
@@ -150,6 +201,25 @@ const IpAddresses = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the IP address record
+              from the database.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -81,14 +81,17 @@ export const api = {
     return response.json();
   },
 
-  updateUserRole: async (id: string, role: string, isActive: boolean, token?: string) => {
+  updateUserRole: async (id: string, role: string, isActive: boolean, canAccessTodos?: boolean, token?: string) => {
     const headers: HeadersInit = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
+    
+    const body: any = { role, isActive };
+    if (canAccessTodos !== undefined) body.canAccessTodos = canAccessTodos;
     
     const response = await fetch(`${API_BASE_URL}/user/${id}/role`, {
       method: 'PATCH',
       headers,
-      body: JSON.stringify({ role, isActive })
+      body: JSON.stringify(body)
     });
     return response.json();
   },
@@ -181,6 +184,13 @@ export const api = {
   getIpAddresses: async (limit?: number) => {
     const url = limit ? `${IP_API_BASE_URL}/ipaddresses?limit=${limit}` : `${IP_API_BASE_URL}/ipaddresses`;
     const response = await fetch(url);
+    return response.json();
+  },
+
+  deleteIpAddress: async (id: string) => {
+    const response = await fetch(`${IP_API_BASE_URL}/ipaddresses/${id}`, {
+      method: 'DELETE'
+    });
     return response.json();
   }
 };

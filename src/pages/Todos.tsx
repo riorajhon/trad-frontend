@@ -54,10 +54,21 @@ const Todos = () => {
     try {
       const result = await api.getUserById(userId, token || undefined);
       if (result.success) {
+        // Check if user has todo access or is admin
+        if (!result.data.canAccessTodos && result.data.role !== 'admin') {
+          toast({
+            title: 'Access Denied',
+            description: 'You do not have permission to access the todo list',
+            variant: 'destructive'
+          });
+          navigate('/dashboard');
+          return;
+        }
         setCurrentUser(result.data);
       }
     } catch (error) {
       console.error('Failed to load user');
+      navigate('/signin');
     }
   };
 
