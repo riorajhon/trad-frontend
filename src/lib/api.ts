@@ -191,6 +191,20 @@ export const api = {
     const response = await fetch(`${IP_API_BASE_URL}/ipaddresses/${id}`, {
       method: 'DELETE'
     });
-    return response.json();
+    
+    // Handle 204 No Content response
+    if (response.status === 204) {
+      return { success: true, message: 'IP address deleted successfully' };
+    }
+    
+    // Handle other successful responses
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    }
+    
+    // Handle errors
+    const errorData = await response.json().catch(() => ({ error: 'Failed to delete IP address' }));
+    return { success: false, error: errorData.error || errorData.message || 'Failed to delete IP address' };
   }
 };

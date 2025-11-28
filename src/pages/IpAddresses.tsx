@@ -75,7 +75,8 @@ const IpAddresses = () => {
     try {
       const result = await api.deleteIpAddress(deleteId);
 
-      if (result.success) {
+      // Check if deletion was successful (either result.success or HTTP 200/204)
+      if (result.success || result.message === 'IP address deleted successfully' || !result.error) {
         setIpAddresses(ipAddresses.filter(ip => ip.id !== deleteId));
         toast({
           title: 'Success',
@@ -84,14 +85,15 @@ const IpAddresses = () => {
       } else {
         toast({
           title: 'Error',
-          description: result.message || 'Failed to delete IP address',
+          description: result.message || result.error || 'Failed to delete IP address',
           variant: 'destructive'
         });
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Delete error:', error);
       toast({
         title: 'Error',
-        description: 'Failed to delete IP address',
+        description: error?.message || 'Failed to delete IP address',
         variant: 'destructive'
       });
     } finally {
